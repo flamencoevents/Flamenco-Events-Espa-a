@@ -14,7 +14,7 @@ PAGES = ("index.html", "suite-flamenca.html", "son-del-alma.html",
 for name in PAGES:
     file = ROOT / name
     html = file.read_text(encoding="utf-8")
-    html = re.sub(r'<meta\\s+name="robots"\\s+content="noindex,nofollow">', '<meta name="robots" content="index,follow">', html, flags=re.I)
+    html = re.sub(r'<meta\s+name="robots"\s+content="noindex,nofollow">', '<meta name="robots" content="index,follow">', html, flags=re.I)
     canonical = DOMAIN + ("/" if name == "index.html" else "/" + name)
     html = html.replace("</head>", f'<link rel="canonical" href="{canonical}"></head>', 1)
     if '<meta name="robots" content="index,follow">' not in html:
@@ -64,7 +64,7 @@ for entry in legacy:
     created += 1
 
 (ROOT / "robots.txt").write_text(
-    "User-agent: *\\nAllow: /\\nSitemap: https://flamencoevents.net/sitemap.xml\\n", encoding="utf-8"
+    "User-agent: *\nAllow: /\nSitemap: https://flamencoevents.net/sitemap.xml\n", encoding="utf-8"
 )
 ns = "http://www.sitemaps.org/schemas/sitemap/0.9"
 ET.register_namespace("", ns)
