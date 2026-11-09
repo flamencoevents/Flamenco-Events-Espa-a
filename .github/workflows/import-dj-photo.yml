@@ -1,0 +1,49 @@
+name: Import supplied DJ photograph and replace service image
+
+on:
+  push:
+    paths: [".github/workflows/import-dj-photo.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  import-dj:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Import the photographer's supplied image via Canva asset
+        env:
+          ORIGINAL_CANDIDATE: "https://media.canva.com/v2/image-resize/format:JPG/height:1121/quality:85/uri:ifs%3A%2F%2FM%2Fc8a85b68-8007-4ec6-98eb-d70e40027f00/watermark:F/width:2000?csig=AAAAAAAAAAAAAAAAAAAAAG03Qz4kY-U3jwWvORKVwUp6xrcMnthcS8Dd15Z0UgrP&exp=1794285069&osig=AAAAAAAAAAAAAAAAAAAAAJUldnilrRGf4JcytbcM6F_3cXgHmTWbQQsZFr21F9pr&signer=media-rpc&token=AAIAAU0AJGM4YTg1YjY4LTgwMDctNGVjNi05OGViLWQ3MGU0MDAyN2YwMAAAAAABocO5YsiJ-56Tow2nXt2OXNbmMJFRb7iGrh6dLpEX-scGRe7FyQ&x-canva-quality=thumbnail"
+          THUMBNAIL_URL: "https://media.canva.com/v2/image-resize/format:JPG/height:112/quality:75/uri:ifs%3A%2F%2FM%2Fc8a85b68-8007-4ec6-98eb-d70e40027f00/watermark:F/width:200?csig=AAAAAAAAAAAAAAAAAAAAAG03Qz4kY-U3jwWvORKVwUp6xrcMnthcS8Dd15Z0UgrP&exp=1794285069&osig=AAAAAAAAAAAAAAAAAAAAAJUldnilrRGf4JcytbcM6F_3cXgHmTWbQQsZFr21F9pr&signer=media-rpc&token=AAIAAU0AJGM4YTg1YjY4LTgwMDctNGVjNi05OGViLWQ3MGU0MDAyN2YwMAAAAAABocO5YsiJ-56Tow2nXt2OXNbmMJFRb7iGrh6dLpEX-scGRe7FyQ&x-canva-quality=thumbnail"
+        run: |
+          set -euo pipefail
+          mkdir -p assets
+          # Prefer full resolution if Canva permits access to the original.
+          if curl --fail --location --silent --show-error --max-time 30 "$ORIGINAL_CANDIDATE" -o /tmp/dj-photo.jpg && [ "$(wc -c </tmp/dj-photo.jpg)" -gt 20000 ]; then
+            echo "Downloaded full-sized version"
+          else
+            echo "Full size not available; downloading original asset's preview"
+            curl --fail --location --silent --show-error --retry 3 "$THUMBNAIL_URL" -o /tmp/dj-photo.jpg
+          fi
+          python3 - <<'PY'
+          from pathlib import Path
+          image = Path('/tmp/dj-photo.jpg').read_bytes()
+          assert image[:3] == b'\\xff\\xd8\\xff', 'Image is not JPEG'
+          assert len(image) > 1000, 'Downloaded file is too small'
+          Path('assets/sonorizacion-dj.jpg').write_bytes(image)
+          index = Path('index.html')
+          original = index.read_text(encoding='utf-8')
+          old = 'src="assets/evento-real.jpg" alt="Ambiente en un evento real de Flamenco Events"'
+          new = 'src="assets/sonorizacion-dj.jpg" alt="DJ mezclando música en una celebración al aire libre con invitados bailando"'
+          assert old in original, 'Expected original image missing; aborting'
+          index.write_text(original.replace(old,new,1),encoding='utf-8')
+          print('Image imported and DJ service card changed')
+          PY
+      - name: Commit image and updated Spanish DJ card
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html assets/sonorizacion-dj.jpg
+          git diff --cached --quiet || (git commit -m "Replace DJ service photo with supplied wedding reception image" && git push)
