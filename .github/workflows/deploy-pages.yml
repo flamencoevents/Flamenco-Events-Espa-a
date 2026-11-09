@@ -1,4 +1,4 @@
-name: Publish Spanish Agency staging website
+name: Publish Spanish Agency website
 
 on:
   push:
@@ -9,6 +9,8 @@ on:
       - "assets/**"
       - "robots.txt"
       - "validate_spanish.py"
+      - "prepare_production.py"
+      - "legacy-urls.txt"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
@@ -42,7 +44,10 @@ jobs:
           test ! -f _site/CNAME
           test ! -e _site/portal.html
           test ! -e _site/admin.html
-          grep -q 'noindex,nofollow' _site/index.html
+          python3 prepare_production.py
+          grep -q 'index,follow' _site/index.html
+          test -f _site/sitemap.xml
+          test -f _site/en-gb/index.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
@@ -51,6 +56,6 @@ jobs:
         uses: actions/upload-pages-artifact@v4
         with:
           path: _site
-      - name: Publish Spanish staging
+      - name: Publish Spanish website
         id: deployment
         uses: actions/deploy-pages@v4
