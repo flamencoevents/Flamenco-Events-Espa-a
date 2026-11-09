@@ -27,16 +27,22 @@ jobs:
             echo "Full size not available; downloading original asset's preview"
             curl --fail --location --silent --show-error --retry 3 "$THUMBNAIL_URL" -o /tmp/dj-photo.jpg
           fi
+          python3 -m pip install --quiet Pillow
           python3 - <<'PY'
           from pathlib import Path
-          image = Path('/tmp/dj-photo.jpg').read_bytes()
-          assert image[:3] == b'\\xff\\xd8\\xff', 'Image is not JPEG'
-          assert len(image) > 1000, 'Downloaded file is too small'
-          Path('assets/sonorizacion-dj.jpg').write_bytes(image)
+          from PIL import Image
+          from io import BytesIO
+          raw = Path('/tmp/dj-photo.jpg').read_bytes()
+          assert len(raw) > 1000, 'Downloaded file is too small'
+          photo = Image.open(BytesIO(raw)).convert('RGB')
+          print('Canva supplied image dimensions', photo.size)
+          if photo.width < 800:
+              photo = photo.resize((1000, round(photo.height*1000/photo.width)), Image.Resampling.LANCZOS)
+          photo.save('assets/sonorizacion-dj.webp', 'WEBP', quality=88, method=6)
           index = Path('index.html')
           original = index.read_text(encoding='utf-8')
           old = 'src="assets/evento-real.jpg" alt="Ambiente en un evento real de Flamenco Events"'
-          new = 'src="assets/sonorizacion-dj.jpg" alt="DJ mezclando música en una celebración al aire libre con invitados bailando"'
+          new = 'src="assets/sonorizacion-dj.webp" alt="DJ mezclando música en una celebración al aire libre con invitados bailando"'
           assert old in original, 'Expected original image missing; aborting'
           index.write_text(original.replace(old,new,1),encoding='utf-8')
           print('Image imported and DJ service card changed')
@@ -45,5 +51,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html assets/sonorizacion-dj.jpg
+          git add index.html assets/sonorizacion-dj.webp
           git diff --cached --quiet || (git commit -m "Replace DJ service photo with supplied wedding reception image" && git push)
