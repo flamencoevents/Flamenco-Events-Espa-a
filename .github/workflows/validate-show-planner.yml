@@ -1,0 +1,14 @@
+name: Validate Show Planner Spain staging
+on:
+  push:
+    branches: [show-planner-staging]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate standalone Show Planner site
+        run: python3 validate_show_planner.py
