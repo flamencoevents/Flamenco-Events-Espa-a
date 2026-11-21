@@ -39,7 +39,7 @@ jobs:
           set -euxo pipefail
           mkdir -p _site
           cp -R assets _site/assets
-          cp index.html suite-flamenca.html son-del-alma.html guitarrista-flamenco.html eventos-exclusivos.html bodas-lujo-marbella.html bodas-flamencas-sevilla.html bodas-destino-andalucia.html .nojekyll robots.txt _site/
+          cp index.html suite-flamenca.html son-del-alma.html guitarrista-flamenco.html eventos-exclusivos.html bodas-lujo-marbella.html bodas-flamencas-sevilla.html bodas-destino-andalucia.html preguntas-frecuentes.html .nojekyll robots.txt _site/
           for d in Sondelalma bodas cuadro-de-baile-suite-flamenca inicio68151b70 nachomarroco nueva-página packs-para-la-música-de-tu-boda; do
             cp -R "$d" "_site/$d"
           done
