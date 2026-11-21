@@ -9,14 +9,17 @@ import xml.etree.ElementTree as ET
 ROOT = Path("_site")
 DOMAIN = "https://flamencoevents.net"
 PAGES = ("index.html", "suite-flamenca.html", "son-del-alma.html",
-         "guitarrista-flamenco.html", "eventos-exclusivos.html")
+         "guitarrista-flamenco.html", "eventos-exclusivos.html",
+         "bodas-lujo-marbella.html", "bodas-flamencas-sevilla.html",
+         "bodas-destino-andalucia.html")
 
 for name in PAGES:
     file = ROOT / name
     html = file.read_text(encoding="utf-8")
     html = re.sub(r'<meta\s+name="robots"\s+content="noindex,nofollow">', '<meta name="robots" content="index,follow">', html, flags=re.I)
     canonical = DOMAIN + ("/" if name == "index.html" else "/" + name)
-    html = html.replace("</head>", f'<link rel="canonical" href="{canonical}"></head>', 1)
+    if '<link rel="canonical"' not in html:
+        html = html.replace("</head>", f'<link rel="canonical" href="{canonical}"></head>', 1)
     if '<meta name="robots" content="index,follow">' not in html:
         raise ValueError(f"Missing production indexing directive in {name}")
     file.write_text(html, encoding="utf-8")
@@ -64,7 +67,7 @@ for entry in legacy:
     created += 1
 
 (ROOT / "robots.txt").write_text(
-    "User-agent: *\nAllow: /\nSitemap: https://flamencoevents.net/sitemap.xml\n", encoding="utf-8"
+    "User-agent: OAI-SearchBot\nAllow: /\nDisallow: /admin/\nDisallow: /private/\nDisallow: /api/\nDisallow: /portal.html\n\nUser-agent: *\nAllow: /\nDisallow: /admin/\nDisallow: /private/\nDisallow: /api/\nDisallow: /portal.html\n\nSitemap: https://flamencoevents.net/sitemap.xml\n", encoding="utf-8"
 )
 ns = "http://www.sitemaps.org/schemas/sitemap/0.9"
 ET.register_namespace("", ns)
