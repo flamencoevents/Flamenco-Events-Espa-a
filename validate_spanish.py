@@ -25,8 +25,8 @@ for name in PAGES:
         issues.append(f"Missing page {name}")
         continue
     html = p.read_text(encoding="utf-8")
-    if '<html lang="es">' not in html or 'noindex,nofollow' not in html:
-        issues.append(f"Spanish language or preview safety missing: {name}")
+    if '<html lang="es">' not in html or 'index,follow' not in html:
+        issues.append(f"Spanish language or public indexing missing: {name}")
     if '../portal.html' in html or 'supabase' in html.lower():
         issues.append(f"Private application reference: {name}")
     refs = References()
@@ -42,8 +42,8 @@ for name in PAGES:
 if (ROOT / "CNAME").exists():
     issues.append("Custom domain must remain unattached in staging")
 robots = ROOT / "robots.txt"
-if not robots.is_file() or "Disallow: /" not in robots.read_text(encoding="utf-8"):
-    issues.append("Staging must block indexing")
+if not robots.is_file() or "OAI-SearchBot" not in robots.read_text(encoding="utf-8") or "Allow: /" not in robots.read_text(encoding="utf-8"):
+    issues.append("Public robots.txt must allow OAI-SearchBot")
 for p in (ROOT / "assets").rglob("*"):
     if not p.is_file():
         continue
@@ -56,4 +56,4 @@ for p in (ROOT / "assets").rglob("*"):
 if issues:
     print("\n".join(issues), file=sys.stderr)
     raise SystemExit(1)
-print("Spanish Agency staging validated: five pages, internal links, media and no private portal.")
+print("Spanish Agency public source validated: five core pages, internal links, media and no private portal.")
