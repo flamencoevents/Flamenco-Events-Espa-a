@@ -1,3 +1,10 @@
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+Disallow: /portal.html
+
 User-agent: *
 Allow: /
 Disallow: /admin/
