@@ -20,7 +20,7 @@ for name in PAGES:
     canonical = DOMAIN + ("/" if name == "index.html" else "/" + name)
     if '<link rel="canonical"' not in html:
         html = html.replace("</head>", f'<link rel="canonical" href="{canonical}"></head>', 1)
-    if '<meta name="robots" content="index,follow">' not in html:
+    if not re.search(r'<meta\s+name="robots"\s+content="index,follow(?:,[^"]*)?"', html, flags=re.I):
         raise ValueError(f"Missing production indexing directive in {name}")
     file.write_text(html, encoding="utf-8")
 
