@@ -11,7 +11,7 @@ DOMAIN = "https://flamencoevents.net"
 PAGES = ("index.html", "suite-flamenca.html", "son-del-alma.html",
          "guitarrista-flamenco.html", "eventos-exclusivos.html",
          "bodas-lujo-marbella.html", "bodas-flamencas-sevilla.html",
-         "bodas-destino-andalucia.html")
+         "bodas-destino-andalucia.html", "preguntas-frecuentes.html")
 
 for name in PAGES:
     file = ROOT / name
