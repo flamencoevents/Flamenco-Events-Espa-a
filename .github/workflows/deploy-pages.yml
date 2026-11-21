@@ -36,6 +36,7 @@ jobs:
         run: python3 validate_spanish.py
       - name: Build public pages without exposing repository metadata
         run: |
+          set -euxo pipefail
           mkdir -p _site
           cp -R assets _site/assets
           cp index.html suite-flamenca.html son-del-alma.html guitarrista-flamenco.html eventos-exclusivos.html bodas-lujo-marbella.html bodas-flamencas-sevilla.html bodas-destino-andalucia.html .nojekyll robots.txt _site/
