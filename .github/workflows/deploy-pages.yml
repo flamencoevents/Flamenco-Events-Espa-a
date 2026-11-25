@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -59,6 +60,18 @@ jobs:
         with:
           path: _site
           name: github-pages-${{ github.run_attempt }}
+      - name: Wait for the Pages artifact metadata
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARTIFACT_NAME: github-pages-${{ github.run_attempt }}
+        run: |
+          for attempt in {1..12}; do
+            if gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts?name=$ARTIFACT_NAME" --jq '.artifacts[] | select(.expired == false) | .id' | grep -q .; then
+              exit 0
+            fi
+            sleep 5
+          done
+          exit 1
       - name: Publish Spanish website
         id: deployment
         uses: actions/deploy-pages@v4
